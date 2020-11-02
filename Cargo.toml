@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "spatial_codegen",
+    "spatial_macro",
+    "test"
+]
