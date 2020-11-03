@@ -1,22 +1,17 @@
 use nom::char;
 use nom::character::complete::multispace0;
 use nom::character::complete::multispace1;
-use nom::character::is_alphabetic;
-use nom::character::is_space;
+
 use nom::delimited;
-use nom::do_parse;
-use nom::map;
-use nom::map_res;
+
 use nom::named;
 use nom::separated_list;
 use nom::tag;
-use nom::take_while;
-use nom::take_while1;
+
 use nom::tuple;
 
 use crate::parser::utils::snake_case;
 use nom::bytes::complete::tag as tag_complete;
-use nom::bytes::complete::take_while1;
 
 named!(
     pub parse_package_components<Vec<String>>,

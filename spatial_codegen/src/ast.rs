@@ -2,11 +2,13 @@ pub struct AST {
     pub root: ASTNode,
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub enum ASTNode {
     PackageNode,
     SchemaNode,
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub enum DataType {
     Bool,
     Uint32,
@@ -45,22 +47,26 @@ impl DataType {
     }
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct PackageNode {
     pub name: String,
     pub inner: Vec<Box<ASTNode>>,
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct SchemaFile {
     pub name: String,
     pub types: Vec<Type>,
     pub components: Vec<Component>,
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct Type {
     pub name: String,
     pub members: Vec<Member>,
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct Component {
     pub name: String,
     pub id: usize,
@@ -69,17 +75,20 @@ pub struct Component {
     pub commands: Vec<Command>,
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct Member {
     pub name: String,
     pub m_type: DataType,
     pub id: usize,
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct Event {
     pub name: String,
     pub r_type: DataType,
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub struct Command {
     pub name: String,
     pub r_type: DataType,
