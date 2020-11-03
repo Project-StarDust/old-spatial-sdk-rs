@@ -1,7 +1,9 @@
-use crate::PackageName;
-use crate::PackageComponent;
+use nom::char;
+use nom::character::complete::multispace0;
+use nom::character::complete::multispace1;
 use nom::character::is_alphabetic;
 use nom::character::is_space;
+use nom::delimited;
 use nom::do_parse;
 use nom::map;
 use nom::map_res;
@@ -10,43 +12,32 @@ use nom::separated_list;
 use nom::tag;
 use nom::take_while;
 use nom::take_while1;
+use nom::tuple;
 
+use crate::parser::utils::snake_case;
 use nom::bytes::complete::tag as tag_complete;
-use nom::bytes::complete::take_while1 as take_while1;
-
-
-impl From<String> for PackageComponent {
-    fn from(data: String) -> Self {
-        PackageComponent(data)
-    }
-}
+use nom::bytes::complete::take_while1;
 
 named!(
-    pub parse_package_components<Vec<PackageComponent>>,
+    pub parse_package_components<Vec<String>>,
     separated_list!(
         tag_complete("."),
-        map!(
-            map!(
-                map_res!(
-                    take_while1(is_alphabetic),
-                    std::str::from_utf8
-                ),
-                String::from
-            ),
-            PackageComponent::from
-        )
+        snake_case
     )
 );
 
 named!(
-    pub parse_package_name<PackageName>,
-    do_parse!(
-        tag!("package") >>
-        take_while1!(is_space) >>
-        package_components: parse_package_components >>
-        take_while!(is_space) >>
-        tag!(";") >>
-        (PackageName(package_components))
+    pub parse_package_name<Vec<String>>,
+    delimited!(
+        tuple!(
+            tag!("package"),
+            multispace1
+        ),
+        parse_package_components,
+        tuple!(
+            multispace0,
+            char!(';')
+        )
     )
 );
 
@@ -59,13 +50,7 @@ mod tests {
     fn test_parse_package_components() {
         assert_eq!(
             parse_package_components(b"io.nebulis"),
-            Ok((
-                "".as_bytes(),
-                vec![
-                    PackageComponent("io".to_string()),
-                    PackageComponent("nebulis".to_string())
-                ]
-            ))
+            Ok(("".as_bytes(), vec!["io".to_string(), "nebulis".to_string()]))
         )
     }
 
@@ -73,13 +58,7 @@ mod tests {
     fn test_parse_package_name() {
         assert_eq!(
             parse_package_name(b"package io.nebulis;"),
-            Ok((
-                "".as_bytes(),
-                PackageName(vec![
-                    PackageComponent("io".to_string()),
-                    PackageComponent("nebulis".to_string()),
-                ])
-            ))
+            Ok(("".as_bytes(), vec!["io".to_string(), "nebulis".to_string()]))
         )
     }
 }

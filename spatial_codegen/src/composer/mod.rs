@@ -1,14 +1,9 @@
+use crate::SchemaNode;
 use crate::SchemaAST;
 use crate::Type;
 use crate::{Component, ComponentMember};
 use std::path::{Path, PathBuf};
 use std::{fs::File, io::Write};
-
-enum SchemaNode {
-    Root(Vec<Box<SchemaNode>>),
-    PackageNode(String, Vec<Box<SchemaNode>>),
-    ComponentNode(Component),
-}
 
 fn create_schema_graph(ast: SchemaAST) -> SchemaNode {
     let components = ast
@@ -68,25 +63,36 @@ fn write_component<P: AsRef<Path>>(path: P, component: Component) -> Result<(), 
     file.write_all(component.as_bytes())
 }
 
-fn write_module_file<P: AsRef<Path>>(path: P, nodes: &Vec<Box<SchemaNode>>) -> Result<(), std::io::Error> {
+fn write_module_file<P: AsRef<Path>>(
+    path: P,
+    nodes: &Vec<Box<SchemaNode>>,
+) -> Result<(), std::io::Error> {
     let new_path = path.as_ref().join("mod.rs");
     let mut file = File::create(new_path)?;
     for n in nodes {
         match n.as_ref() {
             SchemaNode::PackageNode(name, _) => {
                 write!(file, "pub mod {};\n", name)?;
-            },
+            }
             SchemaNode::ComponentNode(c) => {
                 write!(file, "pub mod {};\n", c.name.snake_case())?;
-                write!(file, "pub use {}::{};\n", c.name.snake_case(), c.name.camel_case())?;
+                write!(
+                    file,
+                    "pub use {}::{};\n",
+                    c.name.snake_case(),
+                    c.name.camel_case()
+                )?;
             }
             _ => {}
         }
-    };
+    }
     Ok(())
 }
 
-fn process_schema_node<P: AsRef<Path> + Clone>(path: P, node: SchemaNode) -> Result<(), std::io::Error> {
+fn process_schema_node<P: AsRef<Path> + Clone>(
+    path: P,
+    node: SchemaNode,
+) -> Result<(), std::io::Error> {
     Ok(match node {
         SchemaNode::Root(nodes) => {
             std::fs::create_dir_all(path.clone())?;
