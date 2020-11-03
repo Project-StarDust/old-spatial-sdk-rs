@@ -37,7 +37,11 @@ named!(
 
 named!(
     pub snake_case<String>,
-    map!(separated_list!(tag!("_"), snake_case_component), |v| v.into_iter().fold(String::new(), |acc, val| acc + "_" + &val))
+    map!(separated_list!(tag!("_"), snake_case_component), |v| {
+        let mut it = v.into_iter();
+        let first_elem = it.next().expect("No first element was detected");
+        it.fold(first_elem, |acc, val| acc + "_" + &val)
+    })
 );
 
 named!(

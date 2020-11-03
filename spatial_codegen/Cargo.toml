@@ -8,6 +8,7 @@ edition = "2018"
 
 [dependencies]
 nom = "5.1.2"
+walkdir = "2.3.1"
 
 [[example]]
 name = "main"

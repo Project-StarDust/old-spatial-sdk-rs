@@ -10,14 +10,17 @@ use nom::named;
 use nom::separated_list;
 use nom::tag;
 
+use nom::terminated;
+use nom::tuple;
+
 use crate::parser::member::parse_member;
 use crate::parser::utils::camel_case as parse_type_name;
 
 named!(
     parse_members<Vec<Member>>,
     separated_list!(
-        delimited!(multispace0, char!(';'), multispace0),
-        parse_member
+        multispace0,
+        terminated!(parse_member, tuple!(multispace0, char!(';')))
     )
 );
 

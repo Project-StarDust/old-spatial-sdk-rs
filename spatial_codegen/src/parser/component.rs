@@ -14,6 +14,9 @@ use nom::named;
 use nom::separated_list;
 use nom::tag;
 
+use nom::terminated;
+use nom::tuple;
+
 use crate::parser::command::parse_command;
 use crate::parser::event::parse_event;
 use crate::parser::member::parse_member;
@@ -85,8 +88,8 @@ named!(
 named!(
     parse_properties<Vec<ComponentProperty>>,
     separated_list!(
-        delimited!(multispace0, char!(';'), multispace0),
-        parse_property
+        multispace0,
+        terminated!(parse_property, tuple!(multispace0, char!(';')))
     )
 );
 

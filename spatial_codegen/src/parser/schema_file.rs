@@ -10,6 +10,7 @@ use nom::delimited;
 use nom::do_parse;
 use nom::named;
 use nom::separated_list;
+
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -21,6 +22,7 @@ struct SchemaFileBuilder {
     pub components: Vec<Component>,
 }
 
+#[derive(Debug)]
 enum SchemaModel {
     Type(Type),
     Component(Component),

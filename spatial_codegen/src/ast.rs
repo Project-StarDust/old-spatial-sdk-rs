@@ -1,14 +1,15 @@
+#[derive(Debug, Eq, PartialEq, Default)]
 pub struct AST {
-    pub root: ASTNode,
+    pub root: Option<ASTNode>,
 }
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum ASTNode {
-    PackageNode,
-    SchemaNode,
+    PackageNode(PackageNode),
+    SchemaNode(SchemaFile),
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum DataType {
     Bool,
     Uint32,
@@ -53,20 +54,41 @@ pub struct PackageNode {
     pub inner: Vec<Box<ASTNode>>,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+impl PackageNode {
+    pub fn add_node(self, node: ASTNode) -> Self {
+        let mut inner = self.inner;
+        inner.push(Box::new(node));
+        Self {
+            name: self.name,
+            inner,
+        }
+    }
+
+    pub fn has_path<S: AsRef<str>>(&self, path: S) -> bool {
+        self.inner
+            .iter()
+            .map(|node| match &**node {
+                ASTNode::SchemaNode(_) => false,
+                ASTNode::PackageNode(pn) => pn.name == path.as_ref().to_string(),
+            })
+            .fold(false, |acc, val| acc | val)
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct SchemaFile {
     pub name: String,
     pub types: Vec<Type>,
     pub components: Vec<Component>,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Type {
     pub name: String,
     pub members: Vec<Member>,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Component {
     pub name: String,
     pub id: usize,
@@ -75,20 +97,20 @@ pub struct Component {
     pub commands: Vec<Command>,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Member {
     pub name: String,
     pub m_type: DataType,
     pub id: usize,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Event {
     pub name: String,
     pub r_type: DataType,
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Command {
     pub name: String,
     pub r_type: DataType,
