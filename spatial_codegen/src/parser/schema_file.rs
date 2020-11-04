@@ -1,9 +1,11 @@
 use crate::ast::Component;
+use crate::ast::Enum;
 use crate::ast::SchemaFile;
 use crate::ast::Type;
 use crate::parser::component::parse_component;
 use crate::parser::package_name::parse_package_name;
-use crate::parser::spatial_type::parse_type;
+use crate::parser::r#enum::parse_enum;
+use crate::parser::r#type::parse_type;
 use nom::alt;
 use nom::character::complete::multispace0;
 use nom::delimited;
@@ -19,6 +21,7 @@ use std::path::Path;
 struct SchemaFileBuilder {
     pub name: Option<String>,
     pub types: Vec<Type>,
+    pub enums: Vec<Enum>,
     pub components: Vec<Component>,
 }
 
@@ -26,6 +29,7 @@ struct SchemaFileBuilder {
 enum SchemaModel {
     Type(Type),
     Component(Component),
+    Enum(Enum),
 }
 
 impl SchemaFileBuilder {
@@ -33,6 +37,7 @@ impl SchemaFileBuilder {
         match model {
             SchemaModel::Type(t) => self.types.push(t),
             SchemaModel::Component(c) => self.components.push(c),
+            SchemaModel::Enum(e) => self.enums.push(e),
         };
         self
     }
@@ -48,6 +53,7 @@ impl SchemaFileBuilder {
             name,
             components: self.components,
             types: self.types,
+            enums: self.enums,
         })
     }
 }
@@ -56,7 +62,8 @@ named!(
     parse_model<SchemaModel>,
     alt!(
         parse_type => { |t| SchemaModel::Type(t) } |
-        parse_component => { |c| SchemaModel::Component(c) }
+        parse_component => { |c| SchemaModel::Component(c) } |
+        parse_enum => { |e| SchemaModel::Enum(e) }
     )
 );
 

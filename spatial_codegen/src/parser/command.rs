@@ -9,7 +9,6 @@ use nom::named;
 use nom::separated_list;
 use nom::tag;
 
-
 use crate::parser::data_type::parse_type;
 use crate::parser::utils::snake_case as parse_command_name;
 

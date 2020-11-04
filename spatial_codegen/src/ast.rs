@@ -1,6 +1,6 @@
 #[derive(Debug, Eq, PartialEq, Default)]
 pub struct AST {
-    pub root: Option<ASTNode>,
+    pub inner: Vec<ASTNode>,
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -28,6 +28,9 @@ pub enum DataType {
     Bytes,
     EntityID,
     Entity,
+    Map(Box<DataType>, Box<DataType>),
+    List(Box<DataType>),
+    Option(Box<DataType>),
     UserDefined(String),
 }
 
@@ -79,7 +82,20 @@ impl PackageNode {
 pub struct SchemaFile {
     pub name: String,
     pub types: Vec<Type>,
+    pub enums: Vec<Enum>,
     pub components: Vec<Component>,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct Enum {
+    pub name: String,
+    pub values: Vec<Value>,
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub struct Value {
+    pub name: String,
+    pub id: usize,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]

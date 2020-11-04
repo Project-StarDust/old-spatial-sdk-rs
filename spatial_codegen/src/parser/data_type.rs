@@ -1,13 +1,51 @@
 use crate::ast::DataType;
 use nom::alt;
 use nom::bytes::complete::take_while;
+use nom::character::complete::multispace0;
 use nom::character::is_alphabetic;
 use nom::complete;
+use nom::delimited;
 use nom::do_parse;
 use nom::map_res;
 use nom::named;
 use nom::one_of;
+use nom::pair;
+use nom::separated_pair;
 use nom::tag;
+
+named!(
+    pub parse_one_generic<DataType>,
+    delimited!(
+        tag!("<"),
+        delimited!(
+            multispace0,
+            parse_type_without_generics,
+            multispace0
+        ),
+        tag!(">")
+    )
+);
+
+named!(
+    pub parse_two_generics<(DataType, DataType)>,
+    delimited!(
+        tag!("<"),
+        delimited!(
+            multispace0,
+            separated_pair!(
+                parse_type_without_generics,
+                delimited!(
+                    multispace0,
+                    tag!(","),
+                    multispace0
+                ),
+                parse_type_without_generics
+            ),
+            multispace0
+        ),
+        tag!(">")
+    )
+);
 
 named!(
     pub parse_primitive<DataType>,
@@ -42,10 +80,33 @@ named!(
 );
 
 named!(
-    pub parse_type<DataType>,
+    pub parse_generic_type<DataType>,
+    alt!(
+        complete!(
+            pair!(tag!("map"), parse_two_generics)
+        ) => {|(_, generics): (_, (DataType, DataType))| DataType::Map(Box::new(generics.0), Box::new(generics.1)) } |
+        complete!(
+            pair!(tag!("list"), parse_one_generic)
+        ) => {|(_, generic)|  DataType::List(Box::new(generic)) } |
+        complete!(
+            pair!(tag!("option"), parse_one_generic)
+        ) => {|(_, generic)|  DataType::Option(Box::new(generic)) }
+    )
+);
+
+named!(
+    parse_type_without_generics<DataType>,
     alt!(
         complete!(parse_primitive) |
         complete!(parse_user_type) => { |s| DataType::UserDefined(s) }
+    )
+);
+
+named!(
+    pub parse_type<DataType>,
+    alt!(
+        parse_type_without_generics |
+        complete!(parse_generic_type)
     )
 );
 
