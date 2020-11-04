@@ -1,0 +1,15 @@
+package io.nebulis;
+
+component Mass {
+    id = 404;
+    double mass = 1;
+}
+
+component AstralBody {
+    id = 403;
+    double radius = 1;
+}
+
+component GravityPoint {
+    id = 402;
+}

@@ -1,0 +1,5 @@
+package io.nebulis;
+
+component PlayerMarker {
+	id = 4000;
+}

@@ -1,5 +1,5 @@
-//pub mod composer;
 pub mod ast;
+pub mod composer;
 pub mod parser;
 pub mod std_library_ast;
 

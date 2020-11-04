@@ -1,0 +1,26 @@
+package io.nebulis.player;
+
+enum LifeState {
+    ALIVE = 0;
+    DEAD = 1;
+    RESPAWNING = 2;
+}
+
+
+type IsDead { }
+
+type Damage {
+    uint32 points = 1;
+}
+
+type DamageResponse {}
+
+component Health {
+    id = 601;
+    uint32 hp = 1;
+    uint32 max_hp = 2;
+
+    event IsDead is_dead;
+    event Damage took_damage;
+    command DamageResponse damage(Damage);
+}

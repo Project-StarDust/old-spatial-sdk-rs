@@ -1,6 +1,4 @@
 fn main() {
-    let schema = spatial_codegen::parser::parse_file("schema/physics.schema")
-        .expect("Can't create schema ast");
-    println!("{:?}", schema);
-    spatial_codegen::composer::generate_code("./src/generated", schema).unwrap();
+    let schema = spatial_codegen::parse_folder("../schema");
+    spatial_codegen::composer::generate_code("./src/generated", schema).expect("Can't produce schema");
 }

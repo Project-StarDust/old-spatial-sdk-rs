@@ -1,130 +1,216 @@
-use crate::SchemaNode;
-use crate::SchemaAST;
-use crate::Type;
-use crate::{Component, ComponentMember};
-use std::path::{Path, PathBuf};
-use std::{fs::File, io::Write};
+use crate::ast::ASTNode;
+use crate::ast::Component;
+use crate::ast::Enum;
+use crate::ast::SchemaFile;
+use crate::ast::Type;
+use crate::ast::AST;
+use std::fs::File;
+use std::io::Write;
+use std::path::Path;
 
-fn create_schema_graph(ast: SchemaAST) -> SchemaNode {
-    let components = ast
-        .components
-        .into_iter()
-        .map(SchemaNode::ComponentNode)
-        .map(Box::new)
-        .collect::<Vec<Box<SchemaNode>>>();
-    let mut package_components = ast.package_name.0.into_iter().map(|p| p.0).rev();
-    let first_item = package_components
-        .next()
-        .expect("Component doesn't have a package");
-    let node = package_components.fold(
-        SchemaNode::PackageNode(first_item, components),
-        |acc, val| SchemaNode::PackageNode(val, vec![Box::new(acc)]),
-    );
-    SchemaNode::Root(vec![Box::new(node)])
+fn generate_base_uses() -> String {
+    format!(
+        "{}\n{}\n{}\n{}\n",
+        "#[allow(unused_imports)]",
+        "use spatial_macro::spatial_enum;",
+        "use spatial_macro::spatial_type;",
+        "use spatial_macro::spatial_component;"
+    )
 }
 
-fn get_id(component: &Component) -> Option<u32> {
-    match component.body.iter().find(|e| match e {
-        ComponentMember::ID(_) => true,
-        _ => false,
-    })? {
-        ComponentMember::ID(id) => Some(*id),
-        _ => None,
-    }
+fn generate_type(r#type: Type) -> String {
+    format!(
+        "{}\nstruct {} {{{}}}",
+        "#[spatial_type]",
+        r#type.name,
+        if r#type.members.len() > 0 {
+            let members = r#type
+                .members
+                .into_iter()
+                .map(|m| format!("    {}: {}", m.name, m.m_type.rust_type()))
+                .fold(String::new(), |acc, val| {
+                    if acc.len() > 0 {
+                        acc + ",\n" + &val
+                    } else {
+                        val
+                    }
+                });
+            "\n".to_string() + &members + "\n"
+        } else {
+            "".to_string()
+        }
+    )
 }
 
-fn generate_component(component: Component) -> Option<String> {
-    let id = get_id(&component)?;
-    let mut component_str = format!("use spatial_macro::component;\n\n");
-    let mut members = component
-        .body
-        .into_iter()
-        .filter_map(|mb| match mb {
-            ComponentMember::Property(mtype, name, id) => Some((mtype, name, id)),
-            _ => None,
-        })
-        .collect::<Vec<(Type, String, u32)>>();
-    members.sort_by(|a, b| a.2.cmp(&b.2));
-    component_str += &format!("#[component({})]\n", id);
-    component_str += &format!("pub struct {} {{\n", component.name.camel_case());
-    members.iter().for_each(|m| {
-        component_str += &format!("    {}: {},\n", m.1, m.0.rust_type());
-    });
-    component_str += &format!("}}\n\n");
-    Some(component_str)
+fn generate_enum(r#enum: Enum) -> String {
+    format!(
+        "{}\nenum {} {{{}}}",
+        "#[spatial_enum]",
+        r#enum.name,
+        if r#enum.values.len() > 0 {
+            let values = r#enum
+                .values
+                .into_iter()
+                .map(|v| format!("    {}", v.name))
+                .fold(String::new(), |acc, val| {
+                    if acc.len() > 0 {
+                        acc + ",\n" + &val
+                    } else {
+                        val
+                    }
+                });
+            "\n".to_string() + &values + "\n"
+        } else {
+            "".to_string()
+        }
+    )
 }
 
-fn write_component<P: AsRef<Path>>(path: P, component: Component) -> Result<(), std::io::Error> {
-    if let Some(parent_path) = path.as_ref().parent() {
-        std::fs::create_dir_all(parent_path)?;
+fn generate_component(component: Component) -> String {
+    format!(
+        "{}\nstruct {} {{{}}}",
+        format!("#[spatial_component({})]", component.id),
+        component.name,
+        if component.members.len() > 0 {
+            let members = component
+                .members
+                .into_iter()
+                .map(|m| format!("    {}: {}", m.name, m.m_type.rust_type()))
+                .fold(String::new(), |acc, val| {
+                    if acc.len() > 0 {
+                        acc + ",\n" + &val
+                    } else {
+                        val
+                    }
+                });
+            "\n".to_string() + &members + "\n"
+        } else {
+            "".to_string()
+        }
+    )
+}
+
+fn write_to_schema_file<P: AsRef<Path> + Clone>(
+    path: P,
+    schema: SchemaFile,
+) -> Result<(), std::io::Error> {
+    std::fs::create_dir_all(path.clone()).map(|_| {
+        let mut file = File::create(path.clone().as_ref().join(schema.name + ".rs"))?;
+        write!(file, "{}\n", generate_base_uses())?;
+        write!(
+            file,
+            "{}\n",
+            schema
+                .enums
+                .into_iter()
+                .map(generate_enum)
+                .fold(String::new(), |acc, val| acc + "\n\n" + &val)
+        )?;
+        write!(
+            file,
+            "{}\n",
+            schema
+                .types
+                .into_iter()
+                .map(generate_type)
+                .fold(String::new(), |acc, val| acc + "\n\n" + &val)
+        )?;
+        write!(
+            file,
+            "{}\n",
+            schema
+                .components
+                .into_iter()
+                .map(generate_component)
+                .fold(String::new(), |acc, val| acc + "\n\n" + &val)
+        )?;
+        Ok(())
+    })?
+}
+
+fn generate_schema<P: AsRef<Path> + Clone>(
+    path: P,
+    schema: SchemaFile,
+) -> Result<(String, Vec<String>), std::io::Error> {
+    let schema_name = schema.name.clone();
+    let mut names = schema
+        .types
+        .iter()
+        .map(|t| t.name.clone())
+        .collect::<Vec<_>>();
+    names.extend(schema.enums.iter().map(|e| e.name.clone()));
+    names.extend(schema.components.iter().map(|c| c.name.clone()));
+    write_to_schema_file(path, schema)?;
+    Ok((schema_name, names))
+}
+
+fn generate_node<P: AsRef<Path> + Clone>(
+    path: P,
+    node: ASTNode,
+) -> Result<(String, Vec<String>), std::io::Error> {
+    let path_clone = path.clone();
+    let module = match node {
+        ASTNode::SchemaNode(schema) => generate_schema(path_clone, schema)?,
+        ASTNode::PackageNode(pn) => {
+            let name = pn.name.clone();
+            let modules = pn
+                .inner
+                .into_iter()
+                .map(|node| generate_node(path_clone.as_ref().join(&name), *node))
+                .map(|res| match res {
+                    Ok(d) => Ok(d),
+                    Err(e) => {
+                        eprint!("{}", e);
+                        Err(())
+                    }
+                })
+                .filter_map(Result::ok)
+                .collect::<Vec<(String, Vec<String>)>>();
+            generate_mod_rs_file(path_clone.as_ref().join(&name), modules)?;
+            (name, Vec::new())
+        }
     };
-    let mut file = File::create(path)?;
-    let component = generate_component(component).unwrap();
-    file.write_all(component.as_bytes())
+    Ok(module)
 }
 
-fn write_module_file<P: AsRef<Path>>(
+fn generate_mod_rs_file<P: AsRef<Path> + Clone>(
     path: P,
-    nodes: &Vec<Box<SchemaNode>>,
+    modules: Vec<(String, Vec<String>)>,
 ) -> Result<(), std::io::Error> {
-    let new_path = path.as_ref().join("mod.rs");
-    let mut file = File::create(new_path)?;
-    for n in nodes {
-        match n.as_ref() {
-            SchemaNode::PackageNode(name, _) => {
-                write!(file, "pub mod {};\n", name)?;
+    std::fs::create_dir_all(path.clone()).map(|_| {
+        let mut file = File::create(path.clone().as_ref().join("mod.rs"))?;
+        for module in modules {
+            write!(
+                file,
+                "{}mod {};\n",
+                if module.1.len() > 0 { "" } else { "pub " },
+                module.0
+            )?;
+            for usage in module.1 {
+                write!(file, "pub use {}::{};\n", module.0, usage)?;
             }
-            SchemaNode::ComponentNode(c) => {
-                write!(file, "pub mod {};\n", c.name.snake_case())?;
-                write!(
-                    file,
-                    "pub use {}::{};\n",
-                    c.name.snake_case(),
-                    c.name.camel_case()
-                )?;
-            }
-            _ => {}
         }
-    }
-    Ok(())
+        Ok(())
+    })?
 }
 
-fn process_schema_node<P: AsRef<Path> + Clone>(
-    path: P,
-    node: SchemaNode,
-) -> Result<(), std::io::Error> {
-    Ok(match node {
-        SchemaNode::Root(nodes) => {
-            std::fs::create_dir_all(path.clone())?;
-            write_module_file(path.clone(), &nodes)?;
-            for node in nodes {
-                process_schema_node(path.clone(), *node)?;
-            }
-        }
-        SchemaNode::ComponentNode(component) => {
-            let new_path = path.as_ref().join(component.name.snake_case() + ".rs");
-            write_component(new_path, component)?;
-        }
-        SchemaNode::PackageNode(name, nodes) => {
-            let new_path = path.as_ref().join(name);
-            std::fs::create_dir_all(new_path.clone())?;
-            write_module_file(new_path.clone(), &nodes)?;
-            for node in nodes {
-                process_schema_node(new_path.clone(), *node)?;
-            }
-        }
-    })
-}
-
-pub fn generate_code<P: AsRef<Path> + Clone>(
-    path: P,
-    ast: SchemaAST,
-) -> Result<(), std::io::Error> {
+pub fn generate_code<P: AsRef<Path> + Clone>(path: P, ast: AST) -> Result<(), std::io::Error> {
     let path_clone = path.clone();
     if path_clone.as_ref().exists() {
         std::fs::remove_dir_all(path)?;
     }
-
-    let schema_graph = create_schema_graph(ast);
-    process_schema_node(path_clone, schema_graph)
+    let modules = ast
+        .inner
+        .into_iter()
+        .map(|node| generate_node(path_clone.clone(), node))
+        .map(|res| match res {
+            Ok(d) => Ok(d),
+            Err(e) => {
+                eprint!("{}", e);
+                Err(())
+            }
+        })
+        .filter_map(Result::ok)
+        .collect::<Vec<(String, Vec<String>)>>();
+    generate_mod_rs_file(path_clone, modules)
 }

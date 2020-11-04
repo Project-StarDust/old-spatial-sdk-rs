@@ -234,7 +234,7 @@ fn generate_struct(ast: &StructAST) -> String {
 }
 
 #[proc_macro_attribute]
-pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn spatial_component(attr: TokenStream, item: TokenStream) -> TokenStream {
     let id = parse_id(attr.to_string().as_bytes())
         .expect("ID is needed")
         .1;
@@ -246,4 +246,15 @@ pub fn component(attr: TokenStream, item: TokenStream) -> TokenStream {
     let display_impl = generate_display_impl(&ast);
     let t = format!("{}\n{}\n{}", component, implementation, display_impl);
     t.parse().unwrap()
+}
+
+#[proc_macro_attribute]
+pub fn spatial_type(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    item
+}
+
+
+#[proc_macro_attribute]
+pub fn spatial_enum(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    item
 }
