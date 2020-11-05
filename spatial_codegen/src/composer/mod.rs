@@ -10,9 +10,8 @@ fn generate_schema<P: AsRef<Path> + Clone>(
     schema: &SchemaFile,
 ) -> Result<(), std::io::Error> {
     std::fs::create_dir_all(path.clone()).map(|_| {
-        let data = schema.generate();
-        let mut file = File::create(path.clone().as_ref().join(schema.name + ".rs"))?;
-        write!(file, "{}\n", data)?;
+        let mut file = File::create(path.clone().as_ref().join(schema.name.clone() + ".rs"))?;
+        write!(file, "{}\n", schema.generate())?;
         Ok(())
     })?
 }
@@ -23,8 +22,8 @@ fn generate_node<P: AsRef<Path> + Clone>(path: P, node: &ASTNode) -> Result<(), 
         ASTNode::SchemaNode(schema) => generate_schema(path_clone, schema),
         ASTNode::PackageNode(pn) => {
             let name = pn.name.clone();
-            for node in pn.inner {
-                generate_node(path_clone.as_ref().join(&name), &*node)?;
+            for node in &pn.inner {
+                generate_node(path_clone.as_ref().join(&name), node)?;
             }
             generate_mod_rs_file(
                 path_clone.as_ref().join(&name),

@@ -208,9 +208,9 @@ fn generate_improbabled_schema_file() -> SchemaFile {
 fn generate_improbable_restricted_package() -> PackageNode {
     PackageNode {
         name: "restricted".to_string(),
-        inner: vec![Box::new(ASTNode::SchemaNode(
+        inner: vec![ASTNode::SchemaNode(
             generate_improbable_restricted_schema_file(),
-        ))],
+        )],
     }
 }
 
@@ -218,10 +218,10 @@ fn generate_improbable_package() -> PackageNode {
     PackageNode {
         name: "improbable".to_string(),
         inner: vec![
-            Box::new(ASTNode::PackageNode(
+            ASTNode::PackageNode(
                 generate_improbable_restricted_package(),
-            )),
-            Box::new(ASTNode::SchemaNode(generate_improbabled_schema_file())),
+            ),
+            ASTNode::SchemaNode(generate_improbabled_schema_file()),
         ],
     }
 }

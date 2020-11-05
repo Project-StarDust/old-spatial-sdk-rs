@@ -18,7 +18,7 @@ fn package_schema<T: AsRef<str>>(schema: &SchemaFile, path: &[T]) -> ASTNode {
     if path.len() > 0 {
         ASTNode::PackageNode(PackageNode {
             name: path[0].as_ref().to_string(),
-            inner: vec![Box::new(package_schema(schema, &path[1..]))],
+            inner: vec![package_schema(schema, &path[1..])],
         })
     } else {
         ASTNode::SchemaNode(schema.clone())
@@ -36,8 +36,8 @@ fn merge_schema<T: AsRef<str>>(node: ASTNode, schema: &SchemaFile, path: &[T]) -
                             inner: package_node
                                 .inner
                                 .into_iter()
-                                .map(|n| Box::new(merge_schema(*n, schema, &path[1..])))
-                                .collect::<Vec<Box<ASTNode>>>(),
+                                .map(|n| merge_schema(n, schema, &path[1..]))
+                                .collect::<Vec<ASTNode>>(),
                         })
                     } else {
                         ASTNode::PackageNode(

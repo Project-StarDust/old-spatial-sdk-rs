@@ -34,14 +34,14 @@ pub enum ASTNode {
 }
 
 impl ASTNode {
-    pub fn get_export<S: AsRef<Self>>(data: &S) -> (String, Vec<String>) {
-        match data.as_ref() {
-            Self::PackageNode(pn) => ((*pn).name.clone(), Vec::new()),
-            Self::SchemaNode(schema) => ((*schema).name.clone(), (*schema).get_exports()),
+    pub fn get_export(&self) -> (String, Vec<String>) {
+        match self {
+            Self::PackageNode(pn) => (pn.name.clone(), Vec::new()),
+            Self::SchemaNode(schema) => (schema.name.clone(), schema.get_exports()),
         }
     }
 
-    pub fn get_exports<S: AsRef<Self>>(data: &Vec<S>) -> Vec<(String, Vec<String>)> {
+    pub fn get_exports(data: &Vec<Self>) -> Vec<(String, Vec<String>)> {
         data.iter().map(Self::get_export).collect()
     }
 }
