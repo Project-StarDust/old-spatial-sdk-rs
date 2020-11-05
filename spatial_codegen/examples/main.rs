@@ -1,8 +1,8 @@
-extern crate spatial_codegen;
+use spatial_codegen::AST;
 
 fn main() -> () {
-    let schema = spatial_codegen::parse_folder("../schema");
+    let schema = AST::from("../schema");
     println!("{:#?}", schema);
-    let result = spatial_codegen::composer::generate_code("../test/src/generated", schema);
+    let result = schema.generate("../test/src/generated");
     println!("{:#?}", result);
 }

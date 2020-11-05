@@ -169,6 +169,7 @@ fn generate_player_client_component() -> Component {
 
 fn generate_improbable_restricted_schema_file() -> SchemaFile {
     SchemaFile {
+        package_name: vec!["improbable".to_string(), "restricted".to_string()],
         name: "standard_library".to_string(),
         components: vec![
             generate_system_component(),
@@ -187,6 +188,7 @@ fn generate_improbable_restricted_schema_file() -> SchemaFile {
 
 fn generate_improbabled_schema_file() -> SchemaFile {
     SchemaFile {
+        package_name: vec!["improbable".to_string()],
         name: "standard_library".to_string(),
         components: vec![
             generate_position_component(),

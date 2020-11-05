@@ -1,4 +1,4 @@
-use crate::ASTNode;
+use crate::ast::ASTNode;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct PackageNode {

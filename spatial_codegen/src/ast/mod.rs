@@ -9,6 +9,9 @@ pub mod package_node;
 pub mod schema_file;
 pub mod r#type;
 pub mod value;
+pub mod ast;
+pub mod ast_node;
+pub mod std;
 
 pub use command::Command;
 pub use component::Component;
@@ -20,28 +23,6 @@ pub use package_node::PackageNode;
 pub use r#enum::Enum;
 pub use r#type::Type;
 pub use schema_file::SchemaFile;
+pub use ast::AST;
+pub use ast_node::ASTNode;
 pub use value::Value;
-
-#[derive(Debug, Eq, PartialEq, Default)]
-pub struct AST {
-    pub inner: Vec<ASTNode>,
-}
-
-#[derive(Debug, Eq, PartialEq)]
-pub enum ASTNode {
-    PackageNode(PackageNode),
-    SchemaNode(SchemaFile),
-}
-
-impl ASTNode {
-    pub fn get_export(&self) -> (String, Vec<String>) {
-        match self {
-            Self::PackageNode(pn) => (pn.name.clone(), Vec::new()),
-            Self::SchemaNode(schema) => (schema.name.clone(), schema.get_exports()),
-        }
-    }
-
-    pub fn get_exports(data: &Vec<Self>) -> Vec<(String, Vec<String>)> {
-        data.iter().map(Self::get_export).collect()
-    }
-}
