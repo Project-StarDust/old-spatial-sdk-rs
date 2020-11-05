@@ -1,5 +1,5 @@
-use std::convert::identity;
 use crate::ast::Member;
+use std::convert::identity;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Type {
@@ -22,7 +22,7 @@ impl Type {
             .map(Type::generate_one)
             .fold(String::new(), |acc, val| acc + "\n\n" + &val)
     }
-    
+
     pub fn get_export(&self) -> Option<String> {
         Some(self.name.clone())
     }

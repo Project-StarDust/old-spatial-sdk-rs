@@ -35,7 +35,11 @@ impl DataType {
             Self::Double => "f64".to_string(),
             Self::String => "String".to_string(),
             Self::Bytes => "Vec<u8>".to_string(),
-            Self::Map(fst, snd) => format!("std::collections::HashMap<{}, {}>", (*fst).rust_type(), (*snd).rust_type()),
+            Self::Map(fst, snd) => format!(
+                "std::collections::HashMap<{}, {}>",
+                (*fst).rust_type(),
+                (*snd).rust_type()
+            ),
             Self::List(fst) => format!("Vec<{}>", (*fst).rust_type()),
             Self::Option(fst) => format!("Option<{}>", (*fst).rust_type()),
             Self::UserDefined(fst) => fst.to_string(),

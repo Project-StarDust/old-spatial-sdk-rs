@@ -23,7 +23,7 @@ pub struct SchemaFileBuilder {
 }
 
 #[derive(Debug)]
-enum SchemaModel {
+pub enum SchemaModel {
     Type(Type),
     Component(Component),
     Enum(Enum),

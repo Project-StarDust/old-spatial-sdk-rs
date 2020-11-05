@@ -1,9 +1,9 @@
-use std::path::Path;
 use crate::ast::std::generate_standard_library;
 use crate::ast::ASTNode;
 use crate::ast::SchemaFile;
 use std::convert::TryFrom;
 use std::ffi::OsStr;
+use std::path::Path;
 use std::path::PathBuf;
 use walkdir::WalkDir;
 
@@ -29,7 +29,6 @@ impl AST {
         }
         ASTNode::generate_mod_rs(&self.inner, path_clone)
     }
-
 
     fn merge_schema<T: AsRef<str>>(self, schema: &SchemaFile, path: &[T]) -> Self {
         if path.len() > 0 {
@@ -58,12 +57,9 @@ impl AST {
             panic!("SchemaFile does not have a package name");
         }
     }
-    
-
 }
 
 impl<P: AsRef<Path>> From<P> for AST {
-
     fn from(path: P) -> Self {
         WalkDir::new(path)
             .follow_links(true)

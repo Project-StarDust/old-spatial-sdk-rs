@@ -1,7 +1,7 @@
-use std::convert::identity;
 use crate::ast::Command;
 use crate::ast::Event;
 use crate::ast::Member;
+use std::convert::identity;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Component {
@@ -27,7 +27,7 @@ impl Component {
             .map(Component::generate_one)
             .fold(String::new(), |acc, val| acc + "\n\n" + &val)
     }
-    
+
     pub fn get_export(&self) -> Option<String> {
         Some(self.name.clone())
     }

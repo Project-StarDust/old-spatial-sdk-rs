@@ -220,9 +220,7 @@ fn generate_improbable_package() -> PackageNode {
     PackageNode {
         name: "improbable".to_string(),
         inner: vec![
-            ASTNode::PackageNode(
-                generate_improbable_restricted_package(),
-            ),
+            ASTNode::PackageNode(generate_improbable_restricted_package()),
             ASTNode::SchemaNode(generate_improbabled_schema_file()),
         ],
     }

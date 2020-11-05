@@ -1,8 +1,8 @@
 use crate::ast::PackageNode;
 use crate::ast::SchemaFile;
 use std::fs::File;
-use std::path::Path;
 use std::io::Write;
+use std::path::Path;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum ASTNode {
