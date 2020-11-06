@@ -17,7 +17,7 @@ impl Type {
         )
     }
 
-    pub fn generate_multiple(data: &Vec<Self>) -> String {
+    pub fn generate_multiple(data: &[Self]) -> String {
         data.iter()
             .map(Type::generate_one)
             .fold(String::new(), |acc, val| acc + "\n\n" + &val)
@@ -27,7 +27,7 @@ impl Type {
         Some(self.name.clone())
     }
 
-    pub fn get_exports(data: &Vec<Self>) -> Vec<String> {
+    pub fn get_exports(data: &[Self]) -> Vec<String> {
         data.iter()
             .map(Self::get_export)
             .filter_map(identity)

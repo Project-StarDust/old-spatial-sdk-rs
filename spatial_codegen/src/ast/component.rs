@@ -22,8 +22,8 @@ impl Component {
         )
     }
 
-    pub fn generate_multiple(data: &Vec<Self>) -> String {
-        data.into_iter()
+    pub fn generate_multiple(data: &[Self]) -> String {
+        data.iter()
             .map(Component::generate_one)
             .fold(String::new(), |acc, val| acc + "\n\n" + &val)
     }
@@ -32,7 +32,7 @@ impl Component {
         Some(self.name.clone())
     }
 
-    pub fn get_exports(data: &Vec<Self>) -> Vec<String> {
+    pub fn get_exports(data: &[Self]) -> Vec<String> {
         data.iter()
             .map(Self::get_export)
             .filter_map(identity)

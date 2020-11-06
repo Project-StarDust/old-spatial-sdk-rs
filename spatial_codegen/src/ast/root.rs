@@ -31,13 +31,13 @@ impl AST {
     }
 
     fn merge_schema<T: AsRef<str>>(self, schema: &SchemaFile, path: &[T]) -> Self {
-        if path.len() > 0 {
+        if !path.is_empty() {
             let is_path_present = self
                 .inner
                 .iter()
                 .map(|n| match n {
                     ASTNode::SchemaNode(_) => panic!("SchemaFile shouldn't be at the root of AST"),
-                    ASTNode::PackageNode(pn) => pn.name == path[0].as_ref().to_string(),
+                    ASTNode::PackageNode(pn) => pn.name == *path[0].as_ref(),
                 })
                 .fold(false, |acc, val| acc | val);
             if is_path_present {

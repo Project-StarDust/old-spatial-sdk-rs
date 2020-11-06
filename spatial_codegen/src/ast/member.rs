@@ -12,13 +12,13 @@ impl Member {
         format!("    {}: {}", self.name, self.m_type.rust_type())
     }
 
-    pub fn generate_multiple(data: &Vec<Self>) -> String {
-        if data.len() > 0 {
+    pub fn generate_multiple(data: &[Self]) -> String {
+        if !data.is_empty() {
             let members = data
                 .iter()
                 .map(Member::generate_one)
                 .fold(String::new(), |acc, val| {
-                    if acc.len() > 0 {
+                    if !acc.is_empty() {
                         acc + ",\n" + &val
                     } else {
                         val

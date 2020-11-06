@@ -1,4 +1,4 @@
-pub mod ast;
+pub mod root;
 pub mod ast_node;
 pub mod command;
 pub mod component;
@@ -13,7 +13,7 @@ pub mod std;
 pub mod r#type;
 pub mod value;
 
-pub use ast::AST;
+pub use root::AST;
 pub use ast_node::ASTNode;
 pub use command::Command;
 pub use component::Component;

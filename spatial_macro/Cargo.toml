@@ -13,4 +13,6 @@ proc_macro = true
 name = "component_macro"
 
 [dependencies]
-nom = "5.1.2"
+syn = {version = "1.0", features = ["full"] }
+quote = "1.0"
+proc-macro2 = "1.0"

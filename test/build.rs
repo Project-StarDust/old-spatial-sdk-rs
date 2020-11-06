@@ -1,4 +1,6 @@
+use spatial_codegen::AST;
+
 fn main() {
-    let schema = spatial_codegen::parse_folder("../schema");
-    spatial_codegen::composer::generate_code("./src/generated", schema).expect("Can't produce schema");
+    let schema = AST::from("../schema");
+    schema.generate("./src/generated").expect("Can't produce schema");
 }

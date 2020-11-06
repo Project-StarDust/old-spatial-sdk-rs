@@ -17,8 +17,8 @@ impl Enum {
         )
     }
 
-    pub fn generate_multiple(data: &Vec<Self>) -> String {
-        if data.len() > 0 {
+    pub fn generate_multiple(data: &[Self]) -> String {
+        if !data.is_empty() {
             data.iter()
                 .map(Self::generate_one)
                 .fold(String::new(), |acc, val| acc + "\n" + &val)
@@ -31,7 +31,7 @@ impl Enum {
         Some(self.name.clone())
     }
 
-    pub fn get_exports(data: &Vec<Self>) -> Vec<String> {
+    pub fn get_exports(data: &[Self]) -> Vec<String> {
         data.iter()
             .map(Self::get_export)
             .filter_map(identity)

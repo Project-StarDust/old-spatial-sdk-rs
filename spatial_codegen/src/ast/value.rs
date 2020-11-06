@@ -9,13 +9,13 @@ impl Value {
         format!("    {}", self.name)
     }
 
-    pub fn generate_multiple(data: &Vec<Self>) -> String {
-        if data.len() > 0 {
+    pub fn generate_multiple(data: &[Self]) -> String {
+        if !data.is_empty() {
             let values = data
                 .iter()
                 .map(Self::generate_one)
                 .fold(String::new(), |acc, val| {
-                    if acc.len() > 0 {
+                    if !acc.is_empty() {
                         acc + ",\n" + &val
                     } else {
                         val

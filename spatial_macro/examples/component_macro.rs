@@ -8,5 +8,5 @@ struct Mass {
 
 fn main() {
     let mass = Mass::new(0.2, 0.0);
-    println!("{}", mass);
+    println!("{:?}", mass);
 }

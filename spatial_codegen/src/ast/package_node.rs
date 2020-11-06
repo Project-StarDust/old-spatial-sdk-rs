@@ -21,7 +21,7 @@ impl PackageNode {
             .iter()
             .map(|node| match &node {
                 ASTNode::SchemaNode(_) => false,
-                ASTNode::PackageNode(pn) => pn.name == path.as_ref().to_string(),
+                ASTNode::PackageNode(pn) => pn.name == *path.as_ref(),
             })
             .fold(false, |acc, val| acc | val)
     }
